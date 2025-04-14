@@ -33,6 +33,11 @@ A beautiful, interactive visualization tool for monitoring stress levels across 
 
 >> Adjusting Grid Size
 
+* Use the "Grid Resolution" buttons to change heatmap detail
+
+* Lower values provide more granular visualization
+
+
 
 
 
