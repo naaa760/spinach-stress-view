@@ -29,5 +29,4 @@ A beautiful, interactive visualization tool for monitoring stress levels across 
 > Development: Vite, ESLint
 
 
-
-
+## 💻 Usage Guide
