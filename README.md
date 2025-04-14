@@ -24,5 +24,10 @@ A beautiful, interactive visualization tool for monitoring stress levels across 
 
 > UI Components: React Icons
 
+> State Management: React Hooks
+
+> Development: Vite, ESLint
+
+
 
 
