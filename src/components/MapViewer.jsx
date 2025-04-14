@@ -179,11 +179,12 @@ const MapViewer = ({
       maxZoom: 17,
       max: 1.0,
       gradient: {
-        0.3: "#3388ff",
-        0.5: "#5ae639",
-        0.7: "#ffff00",
-        0.8: "#ffaa00",
-        1.0: "#ff3300",
+        0.0: "#ff0000", // Red from the start
+        0.3: "#ff3300", // Deep red-orange
+        0.5: "#ff5500", // Red-orange
+        0.7: "#ff7700", // Orange-red
+        0.8: "#ff9900", // Orange
+        1.0: "#ffcc00", // Yellow-orange
       },
     }).addTo(mapInstance.current);
 
