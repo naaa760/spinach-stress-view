@@ -4,11 +4,6 @@ import ControlPanel from "./components/ControlPanel.jsx";
 import { loadCOG, loadStressGeoJSON } from "./services/dataLoader.js";
 import "./App.css";
 
-// Get environment variables
-const COG_URL = window.env?.REACT_APP_COG_URL || "";
-const GEOJSON_URL = window.env?.REACT_APP_GEOJSON_URL || "";
-const USE_SAMPLE_DATA = window.env?.REACT_APP_USE_SAMPLE_DATA === "true";
-
 function App() {
   const [gridSize, setGridSize] = useState(20);
   const [showHotspots, setShowHotspots] = useState(false);
@@ -17,58 +12,61 @@ function App() {
   const [cogData, setCogData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedStressFile, setSelectedStressFile] = useState(
+    "/data/stress_sample.json"
+  );
+  const availableStressFiles = [
+    { name: "Sample Data 1", url: "/data/stress_sample.json" },
+    { name: "Sample Data 2", url: "/api/stress-data" },
+  ];
 
-  // Load data when component mounts
   useEffect(() => {
     async function loadData() {
       setIsLoading(true);
       setError(null);
 
       try {
-        // Load COG data
-        if (COG_URL && !USE_SAMPLE_DATA) {
-          const cogResult = await loadCOG(COG_URL);
+        // Get COG URL from environment config
+        const cogUrl = window.env?.REACT_APP_COG_URL || "";
+        console.log("Loading COG from URL:", cogUrl);
+
+        if (cogUrl && cogUrl !== "sample") {
+          // Load actual COG data
+          const cogResult = await loadCOG(cogUrl);
           setCogData(cogResult);
+          console.log("COG data loaded successfully", cogResult);
         }
 
-        // Load stress data from GeoJSON
-        let data;
-        if (GEOJSON_URL && !USE_SAMPLE_DATA) {
-          data = await loadStressGeoJSON(GEOJSON_URL);
-        } else {
-          // Import sample data dynamically only if needed
-          const { sampleStressData } = await import("./data/sampleData.js");
-          data = sampleStressData;
-          console.warn(
-            "Using sample stress data. For production, set real GEOJSON_URL."
-          );
-        }
+        // Load stress data from selected GeoJSON
+        console.log("Loading stress data from:", selectedStressFile);
+        const data = await loadStressGeoJSON(selectedStressFile);
+        console.log("Loaded stress data:", data.length, "points");
 
         setStressData(data);
 
-        // Calculate hotspots
+        // Calculate hotspots (stress > 0.7)
         const spots = data.filter((point) => point.stress > 0.7);
+        console.log("Found", spots.length, "hotspots");
         setHotspots(spots);
-
-        setIsLoading(false);
       } catch (err) {
         console.error("Error loading data:", err);
         setError(`Failed to load data: ${err.message}`);
+      } finally {
         setIsLoading(false);
-
-        // Fall back to sample data on error
-        try {
-          const { sampleStressData } = await import("./data/sampleData.js");
-          setStressData(sampleStressData);
-          setHotspots(sampleStressData.filter((point) => point.stress > 0.7));
-        } catch (fallbackError) {
-          console.error("Even fallback data failed:", fallbackError);
-        }
       }
     }
 
     loadData();
-  }, []);
+  }, [selectedStressFile]); // Reload when stress file changes
+
+  // Calculate average stress
+  const avgStress = stressData.length
+    ? (
+        (stressData.reduce((sum, point) => sum + point.stress, 0) /
+          stressData.length) *
+        100
+      ).toFixed(1)
+    : "0.0";
 
   return (
     <div className="app">
@@ -97,15 +95,10 @@ function App() {
         onToggleStressedAreas={() => setShowHotspots(!showHotspots)}
         pointCount={stressData.length}
         hotspotCount={hotspots.length}
-        avgStress={
-          stressData.length
-            ? (
-                (stressData.reduce((sum, point) => sum + point.stress, 0) /
-                  stressData.length) *
-                100
-              ).toFixed(1)
-            : "0.0"
-        }
+        avgStress={avgStress}
+        stressFiles={availableStressFiles}
+        selectedStressFile={selectedStressFile}
+        onStressFileChange={setSelectedStressFile}
       />
     </div>
   );

@@ -74,14 +74,41 @@ export async function loadStressGeoJSON(url) {
 
     if (data.type === "FeatureCollection") {
       stressData = data.features.map((feature) => {
-        // Extract coordinates and properties
-        const [longitude, latitude] = feature.geometry.coordinates;
-        const stress = feature.properties.stress || 0;
+        let latitude, longitude, stress;
+
+        // Handle Point geometry
+        if (feature.geometry.type === "Point") {
+          [longitude, latitude] = feature.geometry.coordinates;
+        }
+        // Handle Polygon geometry (use centroid)
+        else if (feature.geometry.type === "Polygon") {
+          // Simple centroid calculation for demo
+          const coords = feature.geometry.coordinates[0]; // Outer ring
+          let sumLat = 0,
+            sumLng = 0;
+          coords.forEach((coord) => {
+            sumLng += coord[0];
+            sumLat += coord[1];
+          });
+          longitude = sumLng / coords.length;
+          latitude = sumLat / coords.length;
+        }
+
+        // Get stress/value from properties
+        if (feature.properties.stress !== undefined) {
+          stress = feature.properties.stress;
+        } else if (feature.properties.value !== undefined) {
+          // Normalize value between 0-1 if it's not already
+          stress = Math.min(Math.max(feature.properties.value, 0), 1);
+        } else {
+          stress = 0.5; // Default value
+        }
 
         return {
           latitude,
           longitude,
           stress,
+          properties: feature.properties, // Keep original properties
         };
       });
     }

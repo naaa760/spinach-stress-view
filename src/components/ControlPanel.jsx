@@ -6,6 +6,7 @@ import {
   FaExclamationTriangle,
   FaQuestion,
   FaChartLine,
+  FaFileAlt,
 } from "react-icons/fa";
 
 const ControlPanel = ({
@@ -17,12 +18,40 @@ const ControlPanel = ({
   pointCount = 0,
   hotspotCount = 0,
   avgStress = "0.0",
+  stressFiles = [],
+  selectedStressFile = "",
+  onStressFileChange,
 }) => {
   return (
     <div className="control-panel">
       <h3>
         <FaArrowsAlt style={{ marginRight: "8px" }} /> Visualization Controls
       </h3>
+
+      {stressFiles.length > 0 && (
+        <div className="control-item">
+          <label>
+            <FaFileAlt style={{ marginRight: "8px" }} /> Stress Data Source
+            <span className="tooltip">
+              <FaQuestion size={12} />
+              <span className="tooltip-text">
+                Select different stress data files to visualize
+              </span>
+            </span>
+          </label>
+          <select
+            className="file-selector"
+            value={selectedStressFile}
+            onChange={(e) => onStressFileChange(e.target.value)}
+          >
+            {stressFiles.map((file) => (
+              <option key={file.url} value={file.url}>
+                {file.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div className="control-item">
         <label>
