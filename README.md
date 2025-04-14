@@ -22,4 +22,7 @@ A beautiful, interactive visualization tool for monitoring stress levels across 
 
 > Map Visualization: Leaflet, Leaflet.heat
 
+> UI Components: React Icons
+
+
 
