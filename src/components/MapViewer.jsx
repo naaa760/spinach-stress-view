@@ -3,7 +3,6 @@ import L from "leaflet";
 import "leaflet.heat";
 import { FaLeaf, FaLocationArrow } from "react-icons/fa";
 
-// Fix the icon paths
 L.Icon.Default.imagePath = "/";
 
 const MapViewer = ({
@@ -19,23 +18,20 @@ const MapViewer = ({
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
 
-  // Initialize map when component mounts
   useEffect(() => {
     if (mapRef.current && !mapInstance.current) {
-      // Create map with custom zoom control position
+      // I am creating map with custom zoom control position
       mapInstance.current = L.map(mapRef.current, {
         zoomControl: false,
         attributionControl: false,
       }).setView([37.7749, -122.4194], 13);
 
-      // Add custom position for zoom controls with custom styling
       const zoomControl = L.control
         .zoom({
           position: "bottomright",
         })
         .addTo(mapInstance.current);
 
-      // Style the zoom control
       const zoomInButton = zoomControl
         .getContainer()
         .querySelector(".leaflet-control-zoom-in");
@@ -49,7 +45,6 @@ const MapViewer = ({
         zoomOutButton.style.fontWeight = "bold";
       }
 
-      // Add custom attribution in better position
       L.control
         .attribution({
           position: "bottomleft",
@@ -59,18 +54,16 @@ const MapViewer = ({
         )
         .addTo(mapInstance.current);
 
-      // Add tile layer with subtle styling
+      // I am adding tile layer with the subtle styling
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         opacity: 0.85,
       }).addTo(mapInstance.current);
 
-      // Add a scale control with custom styling
       L.control
         .scale({ position: "bottomright", imperial: false })
         .addTo(mapInstance.current);
 
-      // Add coordinate display
       mapInstance.current.on("mousemove", (e) => {
         setCoordinates({
           lat: e.latlng.lat.toFixed(6),
@@ -78,11 +71,10 @@ const MapViewer = ({
         });
       });
 
-      // Set loaded state
       setTimeout(() => setIsMapLoaded(true), 500);
     }
 
-    // Clean up on unmount
+    // I am cleaning up on unmount
     return () => {
       if (mapInstance.current) {
         mapInstance.current.remove();
@@ -91,11 +83,10 @@ const MapViewer = ({
     };
   }, []);
 
-  // Update heat layer when stress data changes
+  // I am updating heat layer when stress data changes
   useEffect(() => {
     if (!mapInstance.current || !stressData || stressData.length === 0) return;
 
-    // Clean up previous layer and markers
     if (heatLayerRef.current) {
       mapInstance.current.removeLayer(heatLayerRef.current);
     }
@@ -107,14 +98,12 @@ const MapViewer = ({
     });
     markersRef.current = [];
 
-    // Create heat points with enhanced customization
     const heatPoints = stressData.map((point) => [
       point.latitude,
       point.longitude,
-      1 - point.stress, // Invert so high stress gets higher intensity
+      1 - point.stress,
     ]);
 
-    // Create heat layer with enhanced styling
     heatLayerRef.current = L.heatLayer(heatPoints, {
       radius: gridSize * 2,
       blur: 15,
@@ -129,10 +118,9 @@ const MapViewer = ({
       },
     }).addTo(mapInstance.current);
 
-    // Add hotspots if enabled with enhanced styling
     if (showStressedAreas && stressHotspots) {
       stressHotspots.forEach((point) => {
-        // Add pulsing effect for hotspots
+        // I am adding pulsing effect for hotspots
         const marker = L.circleMarker([point.latitude, point.longitude], {
           radius: 8,
           color: "#ff3300",
@@ -186,14 +174,12 @@ const MapViewer = ({
         </p>
       </div>
 
-      {/* Coordinates display */}
       <div className="coordinates-display">
         <FaLocationArrow /> {coordinates.lat}, {coordinates.lng}
       </div>
 
       <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
 
-      {/* Add a subtle overlay for visual enhancement */}
       <div className="map-overlay"></div>
     </div>
   );

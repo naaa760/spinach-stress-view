@@ -22,7 +22,7 @@ export async function loadCOG(url) {
     };
   } catch (error) {
     console.error("Error loading COG:", error);
-    // Return sample data as fallback
+    // I am returning sample data as fallback
     console.log("Using sample COG metadata as fallback");
     return sampleCogMetadata;
   }
@@ -30,10 +30,7 @@ export async function loadCOG(url) {
 
 export async function loadStressData(url) {
   try {
-    // Check if the URL is a local file path
     if (url.startsWith("file:///")) {
-      // For local file paths, you'll need to use fetch with a relative URL
-      // or set up a local server to serve the file
       console.warn(
         "Local file paths can't be accessed directly via fetch. Using a proxy or sample data instead."
       );

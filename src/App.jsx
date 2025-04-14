@@ -10,7 +10,7 @@ function App() {
   const [stressData] = useState(sampleStressData);
   const [hotspots, setHotspots] = useState([]);
 
-  // Calculate hotspots when data or threshold changes
+  // I am calculating hotspots when data or threshold changes
   useEffect(() => {
     if (stressData) {
       const spots = stressData.filter((point) => point.stress > 0.7);

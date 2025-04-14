@@ -6,7 +6,7 @@ const app = express();
 
 app.use(cors());
 
-// Serve the stress sample JSON file
+// I am serving the stress sample JSON file
 app.get("/api/stress-data", (req, res) => {
   const filePath = "/home/neha/heatmap_sample/stress_sample.json";
 
@@ -26,7 +26,6 @@ app.get("/api/stress-data", (req, res) => {
   });
 });
 
-// Start the server
 const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

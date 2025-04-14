@@ -13,8 +13,6 @@ class HeatmapLayer extends CompositeLayer {
       stressHotspots,
     } = this.props;
 
-    // Create a color scale - we invert the scale because lower values mean higher stress
-    // RdYlGn goes from red (low values) to green (high values), so we invert it for stress
     const colorScale = scaleSequential((t) => interpolateRdYlGn(1 - t)).domain([
       0, 1,
     ]);
@@ -27,9 +25,9 @@ class HeatmapLayer extends CompositeLayer {
         getColorValue: (d) => d.stress,
         colorScaleType: "sequential",
         colorRange: Array.from({ length: 6 }, (_, i) => {
-          const t = i / 5; // 0 to 1
+          const t = i / 5;
           const color = colorScale(t);
-          // Parse the color to RGBA format
+
           const match = color.match(
             /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+\.?\d*))?\)/
           );
@@ -37,20 +35,20 @@ class HeatmapLayer extends CompositeLayer {
             const [_, r, g, b, a] = match;
             return [r, g, b, a ? a * 255 : 255];
           }
-          return [255, 0, 0, 255]; // Fallback red
+          return [255, 0, 0, 255];
         }),
         pickable: true,
         cellSize: gridSize,
         extruded: false,
         opacity: 0.7,
         coverage: 1,
-        // Highlight areas with high stress (low values)
+        // Highlight areas with the high stress (low values)
         upperPercentile: 100,
         lowerPercentile: 0,
       }),
     ];
 
-    // Add stressed area highlighting if enabled
+    // I am adding stressed area highlighting if enabled
     if (showStressedAreas && stressHotspots && stressHotspots.length > 0) {
       layers.push(
         new ScatterplotLayer({
@@ -66,7 +64,7 @@ class HeatmapLayer extends CompositeLayer {
           radiusScale: 1,
           radiusMinPixels: 10,
           radiusMaxPixels: 100,
-          // Add pulsing effect
+          // I am adding a pulsing effect
           updateTriggers: {
             getRadius: { time: Date.now() % 1000 }, // Makes the layer update frequently
           },

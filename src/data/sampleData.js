@@ -9,10 +9,10 @@ const createGridPoints = (centerLat, centerLng, gridSize, rows, cols) => {
       const latitude = centerLat - (rows / 2) * latStep + i * latStep;
       const longitude = centerLng - (cols / 2) * lngStep + j * lngStep;
 
-      // Create some interesting patterns in the stress data
+      // I am creating some interesting patterns in the stress data
       let stress = Math.random();
 
-      // Add some hotspots
+      // I am adding some hotspots
       if (
         (i === Math.floor(rows / 3) && j === Math.floor(cols / 3)) ||
         (i === Math.floor((rows * 2) / 3) && j === Math.floor((cols * 2) / 3))
@@ -43,5 +43,5 @@ export const sampleCogMetadata = {
   width: 1000,
   height: 1000,
   bbox: [-122.47, 37.76, -122.37, 37.79],
-  data: new ArrayBuffer(4), // Minimal data since we're not displaying image
+  data: new ArrayBuffer(4),
 };
