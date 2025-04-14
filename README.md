@@ -45,6 +45,13 @@ A beautiful, interactive visualization tool for monitoring stress levels across 
 
 >> Navigating the Map
 
+* Zoom: Use the zoom controls or mouse wheel
+
+* Pan: Click and drag to move the map
+
+* Position: View current coordinates at the bottom left
+
+
 
 
 
