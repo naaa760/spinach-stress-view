@@ -20,4 +20,6 @@ A beautiful, interactive visualization tool for monitoring stress levels across 
 
 > Frontend: React 19, CSS3
 
+> Map Visualization: Leaflet, Leaflet.heat
+
 
