@@ -8,3 +8,7 @@ A beautiful, interactive visualization tool for monitoring stress levels across 
 ## ✨ Features
 
 > Interactive Heatmap: Visual representation of stress data across fields
+
+> Customizable Grid Resolution: Adjust detail level from 10cm to 100cm
+
+
