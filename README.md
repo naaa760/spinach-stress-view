@@ -16,4 +16,4 @@ A beautiful, interactive visualization tool for monitoring stress levels across 
 > Real-time Coordinates: View precise location data as you explore the map
 
 
-
+## 🔧 Technologies
