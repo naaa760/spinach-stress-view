@@ -56,28 +56,8 @@ A beautiful, interactive visualization tool for monitoring stress levels across 
 
 >> 4. View Data Analysis
 
+* Total data points monitored
 
+* Number of detected hotspots
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+* Average stress level across the field
