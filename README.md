@@ -17,3 +17,7 @@ A beautiful, interactive visualization tool for monitoring stress levels across 
 
 
 ## 🔧 Technologies
+
+> Frontend: React 19, CSS3
+
+
