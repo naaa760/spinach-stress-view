@@ -1,30 +1,41 @@
 import { fromUrl } from "geotiff";
-import { sampleCogMetadata } from "../data/sampleData";
 
 export async function loadCOG(url) {
   try {
-    // If we're using sample data, return it directly
-    if (typeof url === "object" && url.bbox) {
-      return url;
+    if (!url || url === "sample") {
+      throw new Error("No COG URL provided");
     }
 
+    console.log("Loading COG from:", url);
     const tiff = await fromUrl(url);
     const image = await tiff.getImage();
     const bbox = image.getBoundingBox();
-    const data = await image.readRasters();
+    const width = image.getWidth();
+    const height = image.getHeight();
+
+    // Get the data as an ArrayBuffer instead of reading all rasters
+    // This is more efficient for large COGs
+    const fileDirectory = image.getFileDirectory();
+
+    console.log("COG metadata loaded successfully:", {
+      width,
+      height,
+      bbox,
+      resolution: image.getResolution(),
+      sampleFormat: fileDirectory.SampleFormat,
+      bitsPerSample: fileDirectory.BitsPerSample,
+    });
 
     return {
       image,
       bbox,
-      data,
-      width: image.getWidth(),
-      height: image.getHeight(),
+      width,
+      height,
+      fileDirectory,
     };
   } catch (error) {
     console.error("Error loading COG:", error);
-    // I am returning sample data as fallback
-    console.log("Using sample COG metadata as fallback");
-    return sampleCogMetadata;
+    throw error;
   }
 }
 
@@ -42,6 +53,45 @@ export async function loadStressData(url) {
     return data;
   } catch (error) {
     console.error("Error loading stress data:", error);
+    throw error;
+  }
+}
+
+export async function loadStressGeoJSON(url) {
+  try {
+    console.log("Loading stress GeoJSON from:", url);
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch GeoJSON: ${response.status} ${response.statusText}`
+      );
+    }
+
+    const data = await response.json();
+
+    // Process GeoJSON into stress data format
+    let stressData = [];
+
+    if (data.type === "FeatureCollection") {
+      stressData = data.features.map((feature) => {
+        // Extract coordinates and properties
+        const [longitude, latitude] = feature.geometry.coordinates;
+        const stress = feature.properties.stress || 0;
+
+        return {
+          latitude,
+          longitude,
+          stress,
+        };
+      });
+    }
+
+    console.log(
+      `Processed ${stressData.length} stress data points from GeoJSON`
+    );
+    return stressData;
+  } catch (error) {
+    console.error("Error loading stress GeoJSON:", error);
     throw error;
   }
 }

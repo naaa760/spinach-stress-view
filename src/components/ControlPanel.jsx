@@ -14,6 +14,9 @@ const ControlPanel = ({
   onGridSizeChange,
   showStressedAreas,
   onToggleStressedAreas,
+  pointCount = 0,
+  hotspotCount = 0,
+  avgStress = "0.0",
 }) => {
   return (
     <div className="control-panel">
@@ -93,15 +96,15 @@ const ControlPanel = ({
           <div className="summary-content">
             <div className="data-row">
               <span>Total Points:</span>
-              <span className="data-value">400</span>
+              <span className="data-value">{pointCount}</span>
             </div>
             <div className="data-row">
               <span>Hotspots:</span>
-              <span className="data-value">32</span>
+              <span className="data-value">{hotspotCount}</span>
             </div>
             <div className="data-row">
               <span>Avg. Stress:</span>
-              <span className="data-value">42.6%</span>
+              <span className="data-value">{avgStress}%</span>
             </div>
           </div>
         </div>
@@ -113,7 +116,7 @@ const ControlPanel = ({
           <div>
             <strong>Field Analysis Tool</strong>
             <br />
-            <small>Version 1.0.0</small>
+            <small>Using Cloud Optimized GeoTIFFs</small>
           </div>
         </div>
       </div>
