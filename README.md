@@ -39,6 +39,13 @@ A beautiful, interactive visualization tool for monitoring stress levels across 
 
 >> Toggling Stress Hotspots
 
+* Enable the "Highlight Stress Hotspots" toggle to see critical areas
+
+* Hotspots appear as animated markers with detailed information on click
+
+
+
+
 
 
 
