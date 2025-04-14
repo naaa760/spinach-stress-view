@@ -1,0 +1,309 @@
+:root {
+  --font-primary: "Poppins", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --font-secondary: "Roboto", Arial, sans-serif;
+  --font-mono: "Roboto Mono", monospace;
+  --primary: #43a047;
+  --primary-dark: #2e7d32;
+  --primary-light: #a5d6a7;
+  --accent: #ff6e40;
+  --text-dark: #263238;
+  --text-light: #ffffff;
+  --background: #f5f7fa;
+  --card-bg: #ffffff;
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  --border-radius: 12px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-primary);
+  background-color: var(--background);
+  color: var(--text-dark);
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+}
+
+.app {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Control Panel Styling */
+.control-panel {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 20px;
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  z-index: 999;
+  max-width: 320px;
+  transition: all 0.3s ease;
+  border-left: 5px solid var(--primary);
+  transform: translateZ(0);
+  animation: slideInRight 0.4s ease-out both;
+}
+
+.control-panel h3 {
+  margin-top: 0;
+  border-bottom: 2px solid var(--primary-light);
+  padding-bottom: 12px;
+  font-size: 16px;
+  color: var(--primary-dark);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.control-item {
+  margin-bottom: 20px;
+}
+
+.control-item label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.grid-size-selector {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.grid-size-option {
+  padding: 8px 16px;
+  background-color: var(--background);
+  border: 1px solid #ddd;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  user-select: none;
+  transform: translateY(0);
+}
+
+.grid-size-option:hover {
+  background-color: var(--primary-light);
+  color: var(--text-light);
+  transform: translateY(-2px);
+}
+
+.grid-size-option.selected {
+  background-color: var(--primary);
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.25);
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+  margin-right: 10px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--primary);
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px var(--primary);
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.color-legend {
+  margin-top: 20px;
+}
+
+.gradient-bar {
+  height: 18px;
+  width: 100%;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: linear-gradient(
+    to right,
+    #3388ff 0%,
+    #5ae639 30%,
+    #ffff00 60%,
+    #ffaa00 80%,
+    #ff3300 100%
+  );
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.legend-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-dark);
+}
+
+/* Map Styling Enhancements */
+.map-container {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+.map-controls {
+  background-color: white;
+  box-shadow: var(--shadow);
+  border-radius: var(--border-radius);
+}
+
+.hotspot-marker {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 0, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
+  }
+}
+
+/* Header and Branding */
+.app-header {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 990;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 12px 20px;
+  border-radius: var(--border-radius);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  max-width: 400px;
+  border-left: 4px solid var(--primary-dark);
+  animation: fadeIn 0.7s ease-out both;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 28px;
+  color: var(--primary-dark);
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.app-title svg {
+  margin-right: 12px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.1));
+}
+
+.app-description {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--text-dark);
+  opacity: 0.8;
+}
+
+/* Add scroll animation for control panel */
+@keyframes slideInRight {
+  from {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Add tooltip styling */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  margin-left: 5px;
+  color: var(--primary);
+}
+
+.tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+.tooltip-text {
+  visibility: hidden;
+  width: 200px;
+  background-color: var(--text-dark);
+  color: var(--text-light);
+  text-align: center;
+  border-radius: 6px;
+  padding: 8px 12px;
+  position: absolute;
+  z-index: 1000;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -100px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  font-size: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.tooltip-text::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: var(--text-dark) transparent transparent transparent;
+}

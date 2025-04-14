@@ -1,0 +1,36 @@
+.gradient-bg {
+  background: linear-gradient(
+    135deg,
+    rgba(76, 175, 80, 0.05) 0%,
+    rgba(56, 142, 60, 0.1) 100%
+  );
+}
+
+.map-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background-image: linear-gradient(
+      rgba(255, 255, 255, 0) 95%,
+      rgba(76, 175, 80, 0.1) 100%
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(76, 175, 80, 0.02) 0%,
+      rgba(255, 255, 255, 0) 65%
+    );
+  z-index: 800;
+}
+
+.control-panel {
+  backdrop-filter: blur(5px);
+  background-color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.app-header {
+  backdrop-filter: blur(5px);
+  background-color: rgba(255, 255, 255, 0.85) !important;
+}
