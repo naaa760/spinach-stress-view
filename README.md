@@ -30,3 +30,28 @@ A beautiful, interactive visualization tool for monitoring stress levels across 
 
 
 ## 💻 Usage Guide
+
+>> Adjusting Grid Size
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
