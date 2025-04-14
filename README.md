@@ -37,11 +37,13 @@ A beautiful, interactive visualization tool for monitoring stress levels across 
 
 * Lower values provide more granular visualization
 
+
 >> Toggling Stress Hotspots
 
 * Enable the "Highlight Stress Hotspots" toggle to see critical areas
 
 * Hotspots appear as animated markers with detailed information on click
+
 
 >> Navigating the Map
 
@@ -51,6 +53,8 @@ A beautiful, interactive visualization tool for monitoring stress levels across 
 
 * Position: View current coordinates at the bottom left
 
+
+>> 4. View Data Analysis
 
 
 
