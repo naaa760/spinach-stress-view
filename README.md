@@ -37,6 +37,7 @@ A beautiful, interactive visualization tool for monitoring stress levels across 
 
 * Lower values provide more granular visualization
 
+>> Toggling Stress Hotspots
 
 
 
