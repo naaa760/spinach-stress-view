@@ -43,6 +43,8 @@ A beautiful, interactive visualization tool for monitoring stress levels across 
 
 * Hotspots appear as animated markers with detailed information on click
 
+>> Navigating the Map
+
 
 
 
