@@ -11,4 +11,4 @@ A beautiful, interactive visualization tool for monitoring stress levels across 
 
 > Customizable Grid Resolution: Adjust detail level from 10cm to 100cm
 
-
+> Stress Hotspot Detection: Automatically highlight areas with high stress levels (>70%)
