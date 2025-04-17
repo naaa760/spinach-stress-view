@@ -254,12 +254,8 @@ const MapViewer = ({
 
     // Force update to exactly 20m view after initial load
     setTimeout(() => {
-      // Set view to exact 20m scale
-      const center = mapInstance.current.getCenter();
-
-      // Set zoom to exactly 20m scale
-      // Use zoom level 18 which typically represents about 20m scale at mid-latitudes
-      mapInstance.current.setZoom(18);
+      // Set view to exact 20m scale with zoom level 18 (approximately 20m scale)
+      mapInstance.current.setView(mapInstance.current.getCenter(), 18);
 
       // After zoom is set, verify the scale with scale control
       const scaleControl = L.control
