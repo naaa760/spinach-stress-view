@@ -27,7 +27,8 @@ const MapViewer = ({
         zoomControl: false,
         attributionControl: false,
         minZoom: 10,
-        maxZoom: 22, // Higher max zoom to see details
+        maxZoom: 22,
+        zoom: 18, // Adjust initial zoom to match approximately 20m scale
       });
 
       const zoomControl = L.control
@@ -108,22 +109,35 @@ const MapViewer = ({
         // Set view with higher zoom
         mapInstance.current.fitBounds(bounds, {
           padding: [20, 20],
-          maxZoom: 22, // Allow higher zoom levels
+          maxZoom: 22,
         });
 
         // Display TIFF with full opacity as base layer
         if (cogData.image) {
-          cogLayerRef.current = L.imageOverlay(
-            URL.createObjectURL(
-              new Blob([cogData.image], { type: "image/tiff" })
-            ),
-            bounds,
-            {
-              opacity: 1.0, // Full opacity for base layer
-              zIndex: 10, // Lower zIndex to stay under grid
-            }
-          ).addTo(mapInstance.current);
+          console.log("Loading TIFF image...");
+
+          // Create a URL for the TIFF blob
+          const tiffUrl = URL.createObjectURL(
+            new Blob([cogData.image], { type: "image/tiff" })
+          );
+
+          // Log the URL to verify it's created
+          console.log("TIFF URL created:", tiffUrl);
+
+          // Create and add the image overlay with proper z-index
+          cogLayerRef.current = L.imageOverlay(tiffUrl, bounds, {
+            opacity: 1.0, // Full opacity for base layer
+            zIndex: 10, // Lower zIndex to stay under grid
+            crossOrigin: true,
+            interactive: false,
+          }).addTo(mapInstance.current);
+
+          console.log("TIFF layer added to map");
+        } else {
+          console.warn("No image data in cogData");
         }
+      } else {
+        console.warn("No bbox in cogData");
       }
     } catch (err) {
       console.error("Error displaying COG:", err);
@@ -173,14 +187,14 @@ const MapViewer = ({
     const fieldMaxLng = maxLng + lngBuffer;
 
     // Adjust number of rows/columns based on gridSize
-    // Fewer cells for larger grid sizes, more cells for smaller grid sizes
     const baseRows = 12;
     const baseCols = 18;
 
     // Scale rows and columns inversely with gridSize
-    // This ensures proper grid resolution representation
-    const numRows = Math.max(6, Math.round(baseRows * (50 / gridSize)));
-    const numCols = Math.max(9, Math.round(baseCols * (50 / gridSize)));
+    // Increase cell size significantly when gridSize is 50
+    const scaleFactor = gridSize === 50 ? 0.4 : 50 / gridSize; // Reduce number of cells for 50m
+    const numRows = Math.max(6, Math.round(baseRows * scaleFactor));
+    const numCols = Math.max(9, Math.round(baseCols * scaleFactor));
 
     const cellHeight = (fieldMaxLat - fieldMinLat) / numRows;
     const cellWidth = (fieldMaxLng - fieldMinLng) / numCols;
@@ -209,21 +223,45 @@ const MapViewer = ({
           [lat + cellHeight, lng + cellWidth],
         ];
 
-        // Create rectangle with clear colors
+        // Find the stress value for this cell from the data
+        const cellCenterLat = lat + cellHeight / 2;
+        const cellCenterLng = lng + cellWidth / 2;
+
+        // Find the closest stress data point to this cell
+        let closestPoint = null;
+        let minDistance = Infinity;
+        let stressValue = 0;
+
+        stressData.forEach((point) => {
+          const distance = Math.sqrt(
+            Math.pow(point.latitude - cellCenterLat, 2) +
+              Math.pow(point.longitude - cellCenterLng, 2)
+          );
+
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestPoint = point;
+            stressValue = point.stress;
+          }
+        });
+
+        // Create rectangle with clear colors and stress-based coloring
+        const stressColor = getStressColor(stressValue);
         const rectangle = L.rectangle(bounds, {
           color: "#FFFFFF",
           weight: 1,
-          fillColor: isSoilRow ? brownColor : greenColor,
-          fillOpacity: 0.7, // Reduce opacity to see TIFF underneath
+          fillColor: isSoilRow ? brownColor : stressColor,
+          fillOpacity: 0.6,
           className: "farm-grid-cell",
-          zIndex: 20, // Higher zIndex to stay above TIFF
+          zIndex: 20,
         }).addTo(gridLayer);
 
-        // Simple tooltip with grid size information
+        // Enhanced tooltip with stress value
         rectangle.bindTooltip(
           `<div class="farm-tooltip">
             <strong>${isSoilRow ? "Soil Row" : "Crop Area"}</strong><br>
-            <span>Grid: ${gridSize}cm</span>
+            <span>Grid: ${gridSize}cm</span><br>
+            <span>Stress: ${(stressValue * 100).toFixed(1)}%</span>
           </div>`,
           {
             direction: "top",
@@ -242,12 +280,27 @@ const MapViewer = ({
     // Always fit bounds to show the entire field
     mapInstance.current.fitBounds(bounds, {
       padding: [20, 20],
-      maxZoom: 22, // Allow higher zoom levels
+      maxZoom: 18, // Limit max zoom to match 20m scale
     });
 
     // Set higher zoom level for better grid inspection
     setTimeout(() => {
-      mapInstance.current.setView(mapInstance.current.getCenter(), 20); // Higher zoom level
+      const center = mapInstance.current.getCenter();
+
+      // Set zoom to match approximately 20m scale
+      // Zoom level 18-19 typically shows around 20m scale at mid-latitudes
+      mapInstance.current.setView(center, 18);
+
+      // Add a scale control to verify the scale
+      if (!document.querySelector(".leaflet-control-scale")) {
+        L.control
+          .scale({
+            position: "bottomright",
+            imperial: false,
+            maxWidth: 200,
+          })
+          .addTo(mapInstance.current);
+      }
     }, 400);
 
     // Add hotspot markers if enabled
@@ -316,5 +369,14 @@ const MapViewer = ({
     </div>
   );
 };
+
+function getStressColor(stress) {
+  // Color gradient from green (low stress) to red (high stress)
+  if (stress < 0.2) return "#4CAF50"; // Low stress - green
+  if (stress < 0.4) return "#8BC34A"; // Low-medium stress - light green
+  if (stress < 0.6) return "#FFEB3B"; // Medium stress - yellow
+  if (stress < 0.8) return "#FF9800"; // Medium-high stress - orange
+  return "#F44336"; // High stress - red
+}
 
 export default MapViewer;
