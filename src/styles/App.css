@@ -446,3 +446,30 @@ input:checked + .slider {
     transform: translateX(0);
   }
 }
+
+/* Enhanced zoom control styling */
+.leaflet-control-zoom {
+  margin: 0 0 60px 20px !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+  transition: all 0.3s ease !important;
+}
+
+.leaflet-control-zoom-in:hover,
+.leaflet-control-zoom-out:hover {
+  transform: scale(1.05);
+}
+
+/* Ensure proper stacking */
+.leaflet-bottom.leaflet-left {
+  z-index: 1000;
+  bottom: 40px;
+}
+
+.leaflet-bottom.leaflet-left .leaflet-control {
+  margin-bottom: 0 !important;
+}

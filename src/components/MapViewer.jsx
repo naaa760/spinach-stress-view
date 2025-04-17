@@ -26,29 +26,59 @@ const MapViewer = ({
       mapInstance.current = L.map(mapRef.current, {
         zoomControl: false,
         attributionControl: false,
-        minZoom: 10,
+        minZoom: 16,
         maxZoom: 22,
-        zoom: 18, // Adjust initial zoom to match approximately 20m scale
+        zoom: 20, // Force 20m zoom level
       });
 
       const zoomControl = L.control
         .zoom({
-          position: "bottomright",
+          position: "bottomleft",
         })
         .addTo(mapInstance.current);
 
-      // Style zoom controls
+      // Style zoom controls with better visibility
       const zoomInButton = zoomControl
         .getContainer()
         .querySelector(".leaflet-control-zoom-in");
       const zoomOutButton = zoomControl
         .getContainer()
         .querySelector(".leaflet-control-zoom-out");
+
       if (zoomInButton && zoomOutButton) {
-        zoomInButton.style.color = "#43a047";
-        zoomInButton.style.fontWeight = "bold";
-        zoomOutButton.style.color = "#43a047";
-        zoomOutButton.style.fontWeight = "bold";
+        // Enhanced styling for zoom controls
+        const zoomStyles = {
+          backgroundColor: "white",
+          color: "#43a047",
+          fontWeight: "bold",
+          fontSize: "18px",
+          width: "40px",
+          height: "40px",
+          lineHeight: "40px",
+          border: "2px solid #43a047",
+          borderRadius: "4px",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+          cursor: "pointer",
+          margin: "0 0 60px 20px",
+        };
+
+        Object.assign(zoomInButton.style, zoomStyles);
+        Object.assign(zoomOutButton.style, {
+          ...zoomStyles,
+          borderTop: "none",
+        });
+
+        // Add hover effect
+        [zoomInButton, zoomOutButton].forEach((button) => {
+          button.addEventListener("mouseover", () => {
+            button.style.backgroundColor = "#43a047";
+            button.style.color = "white";
+          });
+          button.addEventListener("mouseout", () => {
+            button.style.backgroundColor = "white";
+            button.style.color = "#43a047";
+          });
+        });
       }
 
       L.control
@@ -125,12 +155,17 @@ const MapViewer = ({
           console.log("TIFF URL created:", tiffUrl);
 
           // Create and add the image overlay with proper z-index
-          cogLayerRef.current = L.imageOverlay(tiffUrl, bounds, {
-            opacity: 1.0, // Full opacity for base layer
-            zIndex: 10, // Lower zIndex to stay under grid
-            crossOrigin: true,
-            interactive: false,
-          }).addTo(mapInstance.current);
+          cogLayerRef.current = L.imageOverlay(
+            URL.createObjectURL(
+              new Blob([cogData.image], { type: "image/tiff" })
+            ),
+            bounds,
+            {
+              opacity: 0.7, // Better visibility
+              zIndex: 10, // Under the grid
+              interactive: true,
+            }
+          ).addTo(mapInstance.current);
 
           console.log("TIFF layer added to map");
         } else {
@@ -190,11 +225,10 @@ const MapViewer = ({
     const baseRows = 12;
     const baseCols = 18;
 
-    // Scale rows and columns inversely with gridSize
-    // Increase cell size significantly when gridSize is 50
-    const scaleFactor = gridSize === 50 ? 0.4 : 50 / gridSize; // Reduce number of cells for 50m
-    const numRows = Math.max(6, Math.round(baseRows * scaleFactor));
-    const numCols = Math.max(9, Math.round(baseCols * scaleFactor));
+    // Adjust grid size for 50m resolution
+    const scaleFactor = gridSize === 50 ? 0.5 : 50 / gridSize;
+    const numRows = Math.max(8, Math.round(baseRows * scaleFactor));
+    const numCols = Math.max(12, Math.round(baseCols * scaleFactor));
 
     const cellHeight = (fieldMaxLat - fieldMinLat) / numRows;
     const cellWidth = (fieldMaxLng - fieldMinLng) / numCols;
@@ -256,12 +290,12 @@ const MapViewer = ({
           zIndex: 20,
         }).addTo(gridLayer);
 
-        // Enhanced tooltip with stress value
+        // Enhanced tooltip with clear stress value
         rectangle.bindTooltip(
           `<div class="farm-tooltip">
             <strong>${isSoilRow ? "Soil Row" : "Crop Area"}</strong><br>
-            <span>Grid: ${gridSize}cm</span><br>
-            <span>Stress: ${(stressValue * 100).toFixed(1)}%</span>
+            <span>Grid Size: ${gridSize}m</span><br>
+            <span>Stress Level: ${(stressValue * 100).toFixed(1)}%</span>
           </div>`,
           {
             direction: "top",
@@ -283,25 +317,9 @@ const MapViewer = ({
       maxZoom: 18, // Limit max zoom to match 20m scale
     });
 
-    // Set higher zoom level for better grid inspection
-    setTimeout(() => {
-      const center = mapInstance.current.getCenter();
-
-      // Set zoom to match approximately 20m scale
-      // Zoom level 18-19 typically shows around 20m scale at mid-latitudes
-      mapInstance.current.setView(center, 18);
-
-      // Add a scale control to verify the scale
-      if (!document.querySelector(".leaflet-control-scale")) {
-        L.control
-          .scale({
-            position: "bottomright",
-            imperial: false,
-            maxWidth: 200,
-          })
-          .addTo(mapInstance.current);
-      }
-    }, 400);
+    // Set view to maintain 20m zoom
+    const center = mapInstance.current.getCenter();
+    mapInstance.current.setView(center, 20);
 
     // Add hotspot markers if enabled
     if (showStressedAreas && stressHotspots) {
@@ -342,7 +360,7 @@ const MapViewer = ({
         markersRef.current.push(marker);
       });
     }
-  }, [stressData, gridSize, showStressedAreas, stressHotspots, cogData]);
+  }, [stressData, gridSize, showStressedAreas, stressHotspots]);
 
   return (
     <div
