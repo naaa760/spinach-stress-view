@@ -108,7 +108,7 @@ const MapViewer = ({
         // Set view with higher zoom
         mapInstance.current.fitBounds(bounds, {
           padding: [20, 20],
-          maxZoom: 19, // Force a higher zoom level
+          maxZoom: 22, // Allow higher zoom levels
         });
 
         // Display TIFF with full opacity as base layer
@@ -119,18 +119,10 @@ const MapViewer = ({
             ),
             bounds,
             {
-              opacity: 1.0, // Full opacity to ensure visibility
-              zIndex: 10, // Position above base map
+              opacity: 1.0, // Full opacity for base layer
+              zIndex: 10, // Lower zIndex to stay under grid
             }
           ).addTo(mapInstance.current);
-
-          // Force higher zoom level after slight delay to ensure proper rendering
-          setTimeout(() => {
-            const currentZoom = mapInstance.current.getZoom();
-            if (currentZoom < 18) {
-              mapInstance.current.setZoom(18);
-            }
-          }, 500);
         }
       }
     } catch (err) {
@@ -219,11 +211,12 @@ const MapViewer = ({
 
         // Create rectangle with clear colors
         const rectangle = L.rectangle(bounds, {
-          color: "#FFFFFF", // White borders
-          weight: 1, // Thicker borders for visibility
+          color: "#FFFFFF",
+          weight: 1,
           fillColor: isSoilRow ? brownColor : greenColor,
-          fillOpacity: 0.9,
+          fillOpacity: 0.7, // Reduce opacity to see TIFF underneath
           className: "farm-grid-cell",
+          zIndex: 20, // Higher zIndex to stay above TIFF
         }).addTo(gridLayer);
 
         // Simple tooltip with grid size information
@@ -249,31 +242,12 @@ const MapViewer = ({
     // Always fit bounds to show the entire field
     mapInstance.current.fitBounds(bounds, {
       padding: [20, 20],
-      maxZoom: 16, // Limit max zoom to ensure grid visibility
+      maxZoom: 22, // Allow higher zoom levels
     });
 
-    // Force update to exactly 20m view after initial load
+    // Set higher zoom level for better grid inspection
     setTimeout(() => {
-      // Set view to exact 20m scale with zoom level 18 (approximately 20m scale)
-      mapInstance.current.setView(mapInstance.current.getCenter(), 18);
-
-      // After zoom is set, verify the scale with scale control
-      const scaleControl = L.control
-        .scale({
-          position: "bottomright",
-          maxWidth: 100,
-          metric: true,
-          imperial: false,
-          updateWhenIdle: false,
-        })
-        .addTo(mapInstance.current);
-
-      // Ensure the scale shows 20m
-      const scaleElement = scaleControl.getContainer();
-      if (scaleElement) {
-        // This will show the current scale in meters
-        console.log("Current scale:", scaleElement.textContent);
-      }
+      mapInstance.current.setView(mapInstance.current.getCenter(), 20); // Higher zoom level
     }, 400);
 
     // Add hotspot markers if enabled
