@@ -59,7 +59,7 @@ const MapViewer = ({
           borderRadius: "4px",
           boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
           cursor: "pointer",
-          margin: "0 0 60px 20px",
+          margin: "0 0 100px 20px",
         };
 
         Object.assign(zoomInButton.style, zoomStyles);
