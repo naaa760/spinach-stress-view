@@ -26,9 +26,9 @@ const MapViewer = ({
       mapInstance.current = L.map(mapRef.current, {
         zoomControl: false,
         attributionControl: false,
+        minZoom: 10,
+        maxZoom: 22, // Higher max zoom to see details
       });
-
-      // Don't set view yet - wait for COG data or stress data to determine bounds
 
       const zoomControl = L.control
         .zoom({
@@ -59,10 +59,10 @@ const MapViewer = ({
         )
         .addTo(mapInstance.current);
 
-      // Add basemap
+      // Reduce opacity of base map to ensure TIFF is more visible
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
-        opacity: 0.85,
+        opacity: 0.3, // Reduce base map opacity
       }).addTo(mapInstance.current);
 
       // Add scale
@@ -89,18 +89,15 @@ const MapViewer = ({
     };
   }, []);
 
-  // Handle COG data
   useEffect(() => {
     if (!mapInstance.current || !cogData) return;
 
-    // Clean up previous COG layer
     if (cogLayerRef.current) {
       mapInstance.current.removeLayer(cogLayerRef.current);
       cogLayerRef.current = null;
     }
 
     try {
-      // Get bounds from COG
       if (cogData.bbox) {
         const [minX, minY, maxX, maxY] = cogData.bbox;
         const bounds = [
@@ -108,19 +105,32 @@ const MapViewer = ({
           [maxY, maxX],
         ];
 
-        // Set view to COG bounds
-        mapInstance.current.fitBounds(bounds);
+        // Set view with higher zoom
+        mapInstance.current.fitBounds(bounds, {
+          padding: [20, 20],
+          maxZoom: 19, // Force a higher zoom level
+        });
 
-        // If COG has image data, display it
+        // Display TIFF with full opacity as base layer
         if (cogData.image) {
-          // Create overlay for the COG with higher opacity
           cogLayerRef.current = L.imageOverlay(
             URL.createObjectURL(
               new Blob([cogData.image], { type: "image/tiff" })
             ),
             bounds,
-            { opacity: 0.9 } // Increase opacity from default
+            {
+              opacity: 1.0, // Full opacity to ensure visibility
+              zIndex: 10, // Position above base map
+            }
           ).addTo(mapInstance.current);
+
+          // Force higher zoom level after slight delay to ensure proper rendering
+          setTimeout(() => {
+            const currentZoom = mapInstance.current.getZoom();
+            if (currentZoom < 18) {
+              mapInstance.current.setZoom(18);
+            }
+          }, 500);
         }
       }
     } catch (err) {
@@ -144,49 +154,131 @@ const MapViewer = ({
     });
     markersRef.current = [];
 
-    // Create heat points
-    const heatPoints = stressData.map((point) => [
-      point.latitude,
-      point.longitude,
-      1 - point.stress, // Invert so high stress gets higher intensity
-    ]);
+    // Create agricultural field grid layer
+    const gridLayer = L.layerGroup().addTo(mapInstance.current);
 
-    // If no COG bounds have set the view yet, use stress data to set bounds
-    if (!cogData?.bbox && heatPoints.length > 0) {
-      // Calculate bounds from stress data points
-      const latitudes = stressData.map((p) => p.latitude);
-      const longitudes = stressData.map((p) => p.longitude);
+    // Gather field boundaries
+    let minLat = Infinity,
+      maxLat = -Infinity;
+    let minLng = Infinity,
+      maxLng = -Infinity;
 
-      const minLat = Math.min(...latitudes);
-      const maxLat = Math.max(...latitudes);
-      const minLng = Math.min(...longitudes);
-      const maxLng = Math.max(...longitudes);
+    stressData.forEach((point) => {
+      minLat = Math.min(minLat, point.latitude);
+      maxLat = Math.max(maxLat, point.latitude);
+      minLng = Math.min(minLng, point.longitude);
+      maxLng = Math.max(maxLng, point.longitude);
+    });
 
-      const bounds = [
-        [minLat, minLng],
-        [maxLat, maxLng],
-      ];
+    // Add small buffer
+    const latBuffer = (maxLat - minLat) * 0.05;
+    const lngBuffer = (maxLng - minLng) * 0.05;
 
-      mapInstance.current.fitBounds(bounds, {
-        padding: [50, 50],
-      });
+    // Field dimensions with buffer
+    const fieldMinLat = minLat - latBuffer;
+    const fieldMaxLat = maxLat + latBuffer;
+    const fieldMinLng = minLng - lngBuffer;
+    const fieldMaxLng = maxLng + lngBuffer;
+
+    // Adjust number of rows/columns based on gridSize
+    // Fewer cells for larger grid sizes, more cells for smaller grid sizes
+    const baseRows = 12;
+    const baseCols = 18;
+
+    // Scale rows and columns inversely with gridSize
+    // This ensures proper grid resolution representation
+    const numRows = Math.max(6, Math.round(baseRows * (50 / gridSize)));
+    const numCols = Math.max(9, Math.round(baseCols * (50 / gridSize)));
+
+    const cellHeight = (fieldMaxLat - fieldMinLat) / numRows;
+    const cellWidth = (fieldMaxLng - fieldMinLng) / numCols;
+
+    // Simple colors for clear visibility
+    const greenColor = "#4CAF50"; // Bright green for crops
+    const brownColor = "#8D6E63"; // Brown for soil rows
+
+    // Create the grid with larger cells
+    for (let row = 0; row < numRows; row++) {
+      for (let col = 0; col < numCols; col++) {
+        const lat = fieldMinLat + row * cellHeight;
+        const lng = fieldMinLng + col * cellWidth;
+
+        // Determine if this is a soil row (brown) or crop area (green)
+        // Create brown rows at positions that scale with grid size
+        const rowPosition = row / numRows;
+        const isSoilRow =
+          (rowPosition > 0.15 && rowPosition < 0.25) || // Top brown row
+          (rowPosition > 0.45 && rowPosition < 0.55) || // Middle brown row
+          (rowPosition > 0.75 && rowPosition < 0.85); // Bottom brown row
+
+        // Create cell
+        const bounds = [
+          [lat, lng],
+          [lat + cellHeight, lng + cellWidth],
+        ];
+
+        // Create rectangle with clear colors
+        const rectangle = L.rectangle(bounds, {
+          color: "#FFFFFF", // White borders
+          weight: 1, // Thicker borders for visibility
+          fillColor: isSoilRow ? brownColor : greenColor,
+          fillOpacity: 0.9,
+          className: "farm-grid-cell",
+        }).addTo(gridLayer);
+
+        // Simple tooltip with grid size information
+        rectangle.bindTooltip(
+          `<div class="farm-tooltip">
+            <strong>${isSoilRow ? "Soil Row" : "Crop Area"}</strong><br>
+            <span>Grid: ${gridSize}cm</span>
+          </div>`,
+          {
+            direction: "top",
+            className: "custom-tooltip",
+          }
+        );
+      }
     }
 
-    // Create heatmap layer
-    heatLayerRef.current = L.heatLayer(heatPoints, {
-      radius: gridSize * 2,
-      blur: 15,
-      maxZoom: 17,
-      max: 1.0,
-      gradient: {
-        0.0: "#ff0000", // Red from the start
-        0.3: "#ff3300", // Deep red-orange
-        0.5: "#ff5500", // Red-orange
-        0.7: "#ff7700", // Orange-red
-        0.8: "#ff9900", // Orange
-        1.0: "#ffcc00", // Yellow-orange
-      },
-    }).addTo(mapInstance.current);
+    // Set initial zoom level based on field size
+    const bounds = [
+      [fieldMinLat, fieldMinLng],
+      [fieldMaxLat, fieldMaxLng],
+    ];
+
+    // Always fit bounds to show the entire field
+    mapInstance.current.fitBounds(bounds, {
+      padding: [20, 20],
+      maxZoom: 16, // Limit max zoom to ensure grid visibility
+    });
+
+    // Force update to exactly 20m view after initial load
+    setTimeout(() => {
+      // Set view to exact 20m scale
+      const center = mapInstance.current.getCenter();
+
+      // Set zoom to exactly 20m scale
+      // Use zoom level 18 which typically represents about 20m scale at mid-latitudes
+      mapInstance.current.setZoom(18);
+
+      // After zoom is set, verify the scale with scale control
+      const scaleControl = L.control
+        .scale({
+          position: "bottomright",
+          maxWidth: 100,
+          metric: true,
+          imperial: false,
+          updateWhenIdle: false,
+        })
+        .addTo(mapInstance.current);
+
+      // Ensure the scale shows 20m
+      const scaleElement = scaleControl.getContainer();
+      if (scaleElement) {
+        // This will show the current scale in meters
+        console.log("Current scale:", scaleElement.textContent);
+      }
+    }, 400);
 
     // Add hotspot markers if enabled
     if (showStressedAreas && stressHotspots) {
